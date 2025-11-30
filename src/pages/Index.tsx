@@ -7,12 +7,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import Icon from '@/components/ui/icon';
 
+const categories = [
+  { id: 'all', name: 'Все', icon: 'Grid3x3', color: 'bg-gradient-to-r from-primary to-secondary' },
+  { id: 'greetings', name: 'Приветствия', icon: 'HandMetal', color: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
+  { id: 'politeness', name: 'Вежливость', icon: 'Heart', color: 'bg-gradient-to-r from-pink-500 to-rose-500' },
+  { id: 'food', name: 'Еда', icon: 'UtensilsCrossed', color: 'bg-gradient-to-r from-orange-500 to-amber-500' },
+  { id: 'travel', name: 'Путешествия', icon: 'Plane', color: 'bg-gradient-to-r from-indigo-500 to-purple-500' },
+  { id: 'numbers', name: 'Числа', icon: 'Hash', color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
+  { id: 'verbs', name: 'Глаголы', icon: 'Zap', color: 'bg-gradient-to-r from-yellow-500 to-orange-500' },
+];
+
 const mockWords = [
-  { id: 1, word: 'Привет', translation: 'Hello', category: 'Greetings', level: 'Beginner', example: 'Привет, как дела?' },
-  { id: 2, word: 'Спасибо', translation: 'Thank you', category: 'Politeness', level: 'Beginner', example: 'Спасибо за помощь!' },
-  { id: 3, word: 'Добрый день', translation: 'Good afternoon', category: 'Greetings', level: 'Beginner', example: 'Добрый день, товарищ!' },
-  { id: 4, word: 'Пожалуйста', translation: 'Please / You\'re welcome', category: 'Politeness', level: 'Beginner', example: 'Пожалуйста, помогите мне' },
-  { id: 5, word: 'Извините', translation: 'Excuse me / Sorry', category: 'Politeness', level: 'Beginner', example: 'Извините за опоздание' },
+  { id: 1, word: 'Привет', translation: 'Hello', category: 'greetings', level: 'Beginner', example: 'Привет, как дела?' },
+  { id: 2, word: 'Спасибо', translation: 'Thank you', category: 'politeness', level: 'Beginner', example: 'Спасибо за помощь!' },
+  { id: 3, word: 'Добрый день', translation: 'Good afternoon', category: 'greetings', level: 'Beginner', example: 'Добрый день, товарищ!' },
+  { id: 4, word: 'Пожалуйста', translation: 'Please / You\'re welcome', category: 'politeness', level: 'Beginner', example: 'Пожалуйста, помогите мне' },
+  { id: 5, word: 'Извините', translation: 'Excuse me / Sorry', category: 'politeness', level: 'Beginner', example: 'Извините за опоздание' },
+  { id: 6, word: 'Хлеб', translation: 'Bread', category: 'food', level: 'Beginner', example: 'Я люблю свежий хлеб' },
+  { id: 7, word: 'Вода', translation: 'Water', category: 'food', level: 'Beginner', example: 'Можно стакан воды?' },
+  { id: 8, word: 'Один', translation: 'One', category: 'numbers', level: 'Beginner', example: 'Один плюс один равно два' },
+  { id: 9, word: 'Два', translation: 'Two', category: 'numbers', level: 'Beginner', example: 'У меня два билета' },
+  { id: 10, word: 'Идти', translation: 'To go', category: 'verbs', level: 'Intermediate', example: 'Я хочу идти домой' },
+  { id: 11, word: 'Говорить', translation: 'To speak', category: 'verbs', level: 'Intermediate', example: 'Я говорю по-русски' },
+  { id: 12, word: 'Аэропорт', translation: 'Airport', category: 'travel', level: 'Intermediate', example: 'Как добраться до аэропорта?' },
 ];
 
 const mockTests = [
@@ -25,15 +42,22 @@ const mockTests = [
 export default function Index() {
   const [activeTab, setActiveTab] = useState('dictionary');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [favorites, setFavorites] = useState<number[]>([1, 3]);
   const [history, setHistory] = useState<string[]>(['Привет', 'Спасибо', 'Добрый день']);
   const [translateFrom, setTranslateFrom] = useState('');
   const [translateTo, setTranslateTo] = useState('');
 
-  const filteredWords = mockWords.filter(word => 
-    word.word.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    word.translation.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredWords = mockWords.filter(word => {
+    const matchesSearch = word.word.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      word.translation.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || word.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const getCategoryName = (categoryId: string) => {
+    return categories.find(cat => cat.id === categoryId)?.name || categoryId;
+  };
 
   const toggleFavorite = (id: number) => {
     setFavorites(prev => 
@@ -110,6 +134,24 @@ export default function Index() {
                 />
               </div>
 
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {categories.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant={selectedCategory === category.id ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`flex-shrink-0 gap-2 transition-all duration-300 ${selectedCategory === category.id ? category.color + ' text-white border-none hover:opacity-90' : 'bg-white/90 hover:bg-white'}`}
+                  >
+                    <Icon name={category.icon} size={16} />
+                    {category.name}
+                    <Badge variant="secondary" className="ml-1 text-xs">
+                      {mockWords.filter(w => category.id === 'all' || w.category === category.id).length}
+                    </Badge>
+                  </Button>
+                ))}
+              </div>
+
               <div className="space-y-3">
                 {filteredWords.map((word, index) => (
                   <Card key={word.id} className="p-4 bg-white/90 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] animate-slide-up border-l-4 border-primary" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -121,7 +163,7 @@ export default function Index() {
                         </div>
                         <p className="text-lg text-foreground mb-2">{word.translation}</p>
                         <p className="text-sm text-muted-foreground italic mb-2">"{word.example}"</p>
-                        <Badge variant="outline" className="text-xs">{word.category}</Badge>
+                        <Badge variant="outline" className="text-xs">{getCategoryName(word.category)}</Badge>
                       </div>
                       <Button
                         variant="ghost"
